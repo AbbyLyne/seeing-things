@@ -1,6 +1,7 @@
 # Quarto build output (published to gh-pages, not committed to main)
 _site/
 .quarto/
+**/*.quarto_ipynb
 # NOTE: _freeze/ IS committed, so don't ignore it
 
 # Data that can be rebuilt
@@ -16,11 +17,14 @@ renv/staging/
 .Rhistory
 __pycache__/
 
+# Obsidian's own settings (change constantly; not part of the notes)
+vault/.obsidian/
+
 # Secrets and OS clutter
 .env
 .DS_Store
 
-# Cloud credentials (see ENGINE_ROOM.md, Security)
+# Cloud credentials (never commit)
 *.p8
 *.pem
 *service-account*.json
@@ -32,4 +36,3 @@ orchestration/.env
 dbt/target/
 dbt/logs/
 dbt/dbt_packages/
-**/*.quarto_ipynb

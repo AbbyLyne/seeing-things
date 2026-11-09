@@ -1,19 +1,20 @@
 # Seeing Things: The Museum of Patterns
- 
+
 > A data museum where every exhibit pairs a real dataset, a beautiful visual,
 > a statistical technique, and the psychological bias that makes us misread it.
 > We're brilliant at spotting patterns, and just as good at seeing things that aren't there.
 > Lift the **Looking Glass** on any exhibit to see the exact code building what you see.
- 
+
 **Status: under construction.** This is a public build that started on 2 Nov 2026. The first exhibits land in late November.
-Live site: *coming this week*.
- 
+Live site: [abbylyne.github.io/seeing-things](https://abbylyne.github.io/seeing-things/)
+
 Built by **Abby Brazell**, data analyst in the Bay of Plenty, Aotearoa New Zealand. This is a personal project, built on my own time with openly licensed public data.
- 
+
 ## The three promises
 1. **See it:** every exhibit has one hero visual that works at a glance.
 2. **Understand it:** the technique is explained in plain English, with the maths optional.
 3. **Question it:** each exhibit names the brain trap involved, so visitors learn to doubt their own pattern-spotting.
+
 ## Core features
 | Feature | What it is |
 |---|---|
@@ -22,13 +23,13 @@ Built by **Abby Brazell**, data analyst in the Bay of Plenty, Aotearoa New Zeala
 | **Looking Glass** | A lens/panel on each visual revealing the SQL, Python and R that produced it |
 | **Double Take** | "Guess first" prompts: visitors guess, then take a second look at the real answer |
 | **Brain Atlas** | An interactive illustrated brain; hotspots zoom into cognitive biases and the studies/exhibits tied to them |
-| **Verdict badges** | Causal, Confounded, Coincidence, Reverse Causation, Inconclusive |
+| **Verdict badges** | Causal, Confounded, Coincidence, Reverse causation, Inconclusive |
 | **Map Room** | Obsidian-style concept graph built from the `vault/` notes (see `docs/CONCEPT_GRAPH.md`) |
 | **Echo pairs** | Each exhibit links to an unrelated one with the same pattern shape (F1 tyre wear and seed decay are both decay curves) |
 | **Bring Your Own Data** | Later phase: upload a file, get recommended charts and tests |
 | **The Engine Room** | Back-of-house wing: pipeline map, published dbt docs, the Power BI twin, "Same model, three engines", Airflow write-up, agent demo |
 | **Spurious** | The outbound series: Spurious Sunday posts, later a newsletter |
- 
+
 ## Stack and the job of each tool
 | Tool | Job |
 |---|---|
@@ -43,19 +44,18 @@ Built by **Abby Brazell**, data analyst in the Bay of Plenty, Aotearoa New Zeala
 | Quarto | Glue: mixes SQL, Python and R, publishes the site |
 | D3 / Observable Plot | Custom interactivity (Brain Atlas, Sankey, lens) |
 | GitHub Pages | Free hosting and visible commit history |
- 
+
 ## Repo structure
 ```
 seeing-things/
 ├── README.md
 ├── LICENSE                   # MIT, for the code
-├── PROJECT_INSTRUCTIONS.md   # rules for every output
 ├── _quarto.yml               # site config
 ├── _freeze/                  # saved code results, so the site publishes without re-running R/Python
 ├── index.qmd, about.qmd      # entrance and about pages
 ├── pyproject.toml, uv.lock   # Python environment (uv)
 ├── renv.lock                 # R environment (renv)
-├── docs/                     # plan, design system, templates, techniques, concept graph, workflow, learning log
+├── docs/                     # exhibit template, technique catalogue, concept graph, R + Python workflow, learning log
 ├── vault/                    # Obsidian vault: concept, technique, bias and exhibit notes
 ├── data/raw/                 # untouched source files (never edited)
 ├── data/processed/           # story tables as Parquet
@@ -70,15 +70,15 @@ seeing-things/
 ├── powerbi/                  # the Power BI twin
 └── assets/                   # styles, fonts, images
 ```
- 
+
 ## Roadmap
-Dated week-by-week detail is in `docs/SCHEDULE.md`.
-- **Phase 1 (2–29 Nov 2026):** repo, dbt + DuckDB, Quarto site, first 2 exhibits
-- **Phase 2 (30 Nov 2026 – 31 Jan 2027):** 7 exhibits across 4 wings, brand style, Power BI twin
-- **Engine Room (1 Feb – 7 Mar 2027):** Microsoft Fabric, Airflow, Snowflake, agents; "Same model, three engines"
-- **Phase 3 (8 Mar – 18 Apr 2027):** Looking Glass lens, Map Room, Double Take prompts, Sankey and treemap exhibits
-- **Phase 4 (19 Apr – 30 May 2027):** Brain Atlas; museum launch 30 May
-- **Phase 5 (from 31 May 2027):** Bring Your Own Data, runnable Looking Glass, more exhibits
+- **Phase 1 (Nov 2026):** repo, dbt + DuckDB, Quarto site, first 2 exhibits
+- **Phase 2 (Dec 2026 – Jan 2027):** 7 exhibits across 4 wings, brand style, Power BI twin
+- **Engine Room (Feb – early Mar 2027):** Microsoft Fabric, Airflow, Snowflake, agents; "Same model, three engines"
+- **Phase 3 (Mar – Apr 2027):** Looking Glass lens, Map Room, Double Take prompts, Sankey and treemap exhibits
+- **Phase 4 (Apr – May 2027):** Brain Atlas; museum launch 30 May
+- **Phase 5 (from June 2027):** Bring Your Own Data, runnable Looking Glass, more exhibits
+
 ## Skill rebuild tracker
 - [ ] SQL: window functions, CTEs, joins (one real query per exhibit)
 - [ ] Python: scripted ingestion (not notebook-only)
@@ -89,6 +89,7 @@ Dated week-by-week detail is in `docs/SCHEDULE.md`.
 - [ ] Airflow: idempotent DAG with retries and a backfill
 - [ ] Agents: grounded Curator agent with a published evaluation set
 - [ ] Learning Log entry per exhibit (`docs/LEARNING_LOG.md`)
+
 ## Licence
 - **Code:** MIT (see `LICENSE`).
 - **Text and charts:** © Abby Brazell, licensed CC BY 4.0 unless stated.
