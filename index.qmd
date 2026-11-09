@@ -1,7 +1,21 @@
 ---
 title: "Seeing Things"
+subtitle: "A museum of patterns"
+toc: false
 ---
 
-This is a Quarto website.
+**Most patterns are mostly noise. Here's how to tell.**
 
-To learn more about Quarto websites visit <https://quarto.org/docs/websites>.
+We're brilliant at spotting patterns, and just as good at seeing things that aren't there. Every exhibit in this museum pairs a real dataset with one clear picture, the statistical technique that tests it, and the brain trap that makes us misread it.
+
+::: {.callout-note}
+## Under construction
+The doors open in stages. The first exhibits arrive in late November 2026, starting with a question from Formula 1: does pole position decide the race?
+:::
+
+## The wings
+
+- **The Cabinet of Coincidences:** correlations that look meaningful and aren't.
+- **Mostly Noise:** chance, luck and streaks.
+- **Decision Corridor:** what actually causes what.
+- **The Lab:** testing ideas properly.

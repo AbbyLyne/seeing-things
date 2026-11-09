@@ -1,5 +1,10 @@
 ---
 title: "About"
+toc: false
 ---
 
-About this site
+**Seeing Things** is a museum of patterns: a collection of short data stories that each ask a simple question, test it honestly, and give a verdict (causal, confounded, coincidence, reverse causation, or inconclusive).
+
+Under every chart, the Looking Glass shows the exact SQL, Python and R that built it, so nothing has to be taken on trust.
+
+It's built by **Abby Brazell**, a data analyst in the Bay of Plenty, Aotearoa New Zealand, as a personal project using openly licensed public data. The code is on [GitHub](https://github.com/AbbyLyne/seeing-things).

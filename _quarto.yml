@@ -1,21 +1,29 @@
 project:
   type: website
+  execute-dir: project            # code runs from the repo root, so paths match everywhere
+  render:
+    - "*.qmd"
+    - "!vault/"                   # notes stay notes
+    - "!docs/"                    # keeps the exhibit template off the site
+
+execute:
+  freeze: auto                    # re-run code only when a page's source changes
 
 website:
   title: "Seeing Things"
+  site-url: "https://abbylyne.github.io/seeing-things/"   # becomes the name domain in Week 4
+  open-graph: true                # nice previews when shared on LinkedIn
   navbar:
     left:
       - href: index.qmd
-        text: Home
-      - about.qmd
+        text: Entrance
+      - href: about.qmd
+        text: About
 
 format:
   html:
-    theme:
-      - cosmo
-      - brand
+    theme: cosmo                  # becomes [cosmo, assets/seeing-things.scss] in Week 5
     css: styles.css
     toc: true
-
-
-
+    code-annotations: select
+    fig-responsive: true
