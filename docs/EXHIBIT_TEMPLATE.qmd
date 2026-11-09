@@ -1,0 +1,100 @@
+---
+# Starter exhibit template for Seeing Things. Copy to stories/<exhibit-slug>.qmd and fill every TODO.
+# This file lives in docs/, which _quarto.yml excludes from rendering, so it never appears on the site.
+title: "TODO: the finding, stated as a headline"
+subtitle: "TODO: the question a curious visitor would ask"
+date: last-modified
+author: "Abby Brazell"
+wing: "TODO: The Cabinet of Coincidences | Mostly Noise | Decision Corridor | The Lab | The Engine Room"
+verdict: "TODO: Causal | Confounded | Coincidence | Reverse causation | Inconclusive"
+technique: "TODO: technique name (see docs/TECHNIQUE_CATALOGUE.md)"
+brain-trap: "TODO: bias name"
+echo: "TODO: slug of the echo exhibit"
+categories: [TODO-wing, TODO-verdict]
+image: "TODO: path to hero chart PNG, used for listing cards and social previews"
+data-synthetic: false
+execute:
+  echo: false        # code lives in the Looking Glass, not inline
+  warning: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+library(DBI); library(duckdb); library(tidyverse)
+# Paths are from the repo root because _quarto.yml sets execute-dir: project
+con <- dbConnect(duckdb(), "data/seeing_things.duckdb", read_only = TRUE)
+source("r/theme_seeingthings.R")
+set.seed(2026)
+```
+
+::: {.callout-note appearance="minimal"}
+**Verdict: TODO** · Wing: TODO · Technique: TODO · Brain trap: TODO
+:::
+
+## Double Take: guess first
+TODO: one question the visitor answers before seeing the chart (OJS slider later; plain text for now).
+
+## The picture
+
+```{r}
+#| label: fig-hero
+#| fig-cap: "TODO: caption that restates the finding"
+#| fig-alt: "TODO: describe what the chart shows and the takeaway, for screen readers"
+# TODO: hero chart (title states the finding; theme_seeingthings())
+```
+
+::: {.looking-glass}
+::: {.panel-tabset}
+## SQL: shape the data
+TODO: show dbt/models/marts/story/<exhibit>.sql with code annotations (# <1>)
+
+## Python: ingest / simulate
+TODO: show the relevant part of python/<exhibit>_*.py (≤ ~40 lines)
+
+## R: test and plot
+TODO: show r/<exhibit>_model.R (≤ ~40 lines)
+:::
+:::
+
+## In plain English
+TODO: 1–2 sentences, no jargon.
+
+## The technique
+**TODO name** (family: TODO). It fits because TODO: variable types, e.g. both ordinal.
+
+**Assumptions and checks**
+
+| Assumption | How I checked | Result |
+|---|---|---|
+| TODO | TODO | TODO |
+
+## What the numbers say
+TODO: effect size with uncertainty in real terms ("about X more per Y, 95% CI A to B"). All numbers inline via `r` code, never typed.
+
+## The brain trap
+TODO: the cognitive bias in 1–2 sentences, and how it fooled you (or would).
+
+## Verdict: TODO
+TODO: the reasoning. What would change the verdict?
+
+## Echo
+Same shape, different world: [TODO echo exhibit](TODO.qmd). TODO: one sentence on the shared pattern.
+
+## Sources and caveats
+- **Data:** TODO source, link, licence, date pulled, n = TODO (for Stats NZ data, use their CC BY 4.0 attribution wording)
+- **Limitations:** TODO
+- **Synthetic?** TODO yes/no
+
+<!-- MAP CHECKLIST (not shown on the page):
+     vault/concepts/<exhibit-slug>.md exists with type: exhibit, and links to
+     concept [[TODO]], technique [[TODO]], bias [[TODO]].
+     Then run: uv run python python/build_graph.py vault data/graph/graph.json -->
+
+## Explore the map
+[Open this exhibit in the Map Room](../map-room.qmd)
+
+```{r}
+#| include: false
+dbDisconnect(con, shutdown = TRUE)
+```
