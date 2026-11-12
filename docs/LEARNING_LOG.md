@@ -10,3 +10,5 @@
 | 3 Nov 2026 | R | Installed packages before renv was active, so they went to my personal library | `renv::init()` only takes effect after R restarts and runs `.Rprofile` | After `renv::init()`, restart R and check that `.libPaths()[1]` is inside the project |
 | 9 Nov 2026 | Git | Tried to publish GitHub Pages from a private repo | GitHub Free only serves Pages from public repos | Check repo visibility first; on the free plan, Pages needs a public repo |
 | 9 Nov 2026 | Git | Looked for the Pages setting in my account settings | GitHub has account settings (avatar menu) and repo settings (repo's Settings tab); Pages lives in the repo's | Repo-level options are on the repo's Settings tab, not under my avatar |
+| 11 Nov | PowerShell | Rename-Item failed: “file already exists” | Week 1 skeleton had already created an empty dbt/	Check the target with Get-ChildItem before renaming; remove placeholders without -Recurse |
+|11 Nov | Git | Files showed “modified” with no visible changes	Obsidian saves LF | Git on Windows converts to CRLF	Run git diff --stat before committing; line-ending-only changes show no lines changed |
