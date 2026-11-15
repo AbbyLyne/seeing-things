@@ -12,3 +12,7 @@
 | 9 Nov 2026 | Git | Looked for the Pages setting in my account settings | GitHub has account settings (avatar menu) and repo settings (repo's Settings tab); Pages lives in the repo's | Repo-level options are on the repo's Settings tab, not under my avatar |
 | 11 Nov | PowerShell | Rename-Item failed: “file already exists” | Week 1 skeleton had already created an empty dbt/	Check the target with Get-ChildItem before renaming; remove placeholders without -Recurse |
 |11 Nov | Git | Files showed “modified” with no visible changes	Obsidian saves LF | Git on Windows converts to CRLF	Run git diff --stat before committing; line-ending-only changes show no lines changed |
+14 Nov | Python | Script ran but printed nothing | Bare expressions only display in the console | Use print() in scripts; explore in the console |
+14 Nov | Python | NameError: CACHE_DIR is not defined | Used a name before creating it | Python runs top to bottom: define settings before using them |
+14 Nov | Python | ErgastInvalidRequestError: Too Many Requests | Requests went faster than Jolpica’s rate limit | Throttle API loops (time.sleep) and cache, so re-runs resume rather than restart |
+15 Nov | SQL (dbt) | Used ::VARCHAR cast shorthand | :: is DuckDB/Postgres only; Fabric T-SQL rejects it | Use cast(x as type) / try_cast in dbt models so they run on every warehouse |
