@@ -38,3 +38,6 @@ dbt/logs/
 dbt/dbt_packages/
 
 /.quarto/
+
+# Keep scratch files out of Git
+python/explore_*.py
