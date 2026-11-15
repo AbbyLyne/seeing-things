@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: stg_f1__results
+    description: "One row per driver per race, 2022–2025. Typed and renamed; finish_position is NULL for drivers not classified (retired, disqualified, etc.)."
+    columns:
+      - name: result_id
+        description: "Season, round and driver ID joined: unique per row."
+        data_tests:
+          - unique
+          - not_null
+      - name: season
+        description: "Championship year."
+        data_tests:
+          - not_null
+      - name: round
+        description: "Race number within the season."
+        data_tests:
+          - not_null
+      - name: driver_code
+        description: "Three-letter driver code, e.g. VER."
+        data_tests:
+          - not_null
+      - name: grid
+        description: "Starting position; 0 = pit-lane start."
+        data_tests:
+          - not_null
+      - name: position_text
+        description: "Official result text: a number if classified, otherwise a code such as R (retired)."
+        data_tests:
+          - not_null

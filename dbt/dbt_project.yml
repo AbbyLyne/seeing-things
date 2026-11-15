@@ -18,6 +18,11 @@ seed-paths: ["seeds"]
 macro-paths: ["macros"]
 snapshot-paths: ["snapshots"]
 
-clean-targets:         # directories to be removed by `dbt clean`
+clean-targets:             # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
+
+models:
+  seeing_things:           # your project name
+    staging:               # the folder dbt/models/staging/
+      +materialized: view  # "+" = apply to everything in this folder

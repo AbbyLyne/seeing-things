@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: f1
+    description: "F1 race results from the Jolpica API via FastF1. CC BY-NC-SA 4.0."
+    meta:
+      external_location: "../data/raw/f1/{name}.parquet"
+    tables:
+      - name: race_results
+        description: "One row per driver per race, as returned by the API. Untouched."
