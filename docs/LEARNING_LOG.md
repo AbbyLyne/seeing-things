@@ -16,3 +16,9 @@
 14 Nov | Python | NameError: CACHE_DIR is not defined | Used a name before creating it | Python runs top to bottom: define settings before using them |
 14 Nov | Python | ErgastInvalidRequestError: Too Many Requests | Requests went faster than Jolpica’s rate limit | Throttle API loops (time.sleep) and cache, so re-runs resume rather than restart |
 15 Nov | SQL (dbt) | Used ::VARCHAR cast shorthand | :: is DuckDB/Postgres only; Fabric T-SQL rejects it | Use cast(x as type) / try_cast in dbt models so they run on every warehouse |
+17 Nov | dbt (Jinja) | Uppercase IF, ELSE, LOCATION inside {{ }} | Jinja is case-sensitive; SQL isn’t | SQL keywords any case; everything inside braces lowercase |
+17 Nov | dbt (Jinja) | SQL -- comments inside {{ config() }} | Inside braces isn’t SQL | Comments go outside the braces |
+17 Nov | SQL | Alias team_avg_grid on a places-gained average | Carried over from the practice query | Name a column for what it measures, and re-read aliases after copying a pattern |
+17 Nov | dbt (YAML) | Added a second models: block instead of extending the first | YAML keeps only one copy of a repeated key and drops the other without an error | Add to the existing block; read deprecation warnings, they can mean settings were dropped |
+17 Nov | dbt (YAML) | +materialized: VIEW | dbt setting values are case-sensitive | Config values lowercase: view, table, external |
+17 Nov | dbt / Git	Root logs/ reappeared | dbt was run from the repo root | Run dbt from dbt\ only; /logs/ is now ignored as a backstop |
