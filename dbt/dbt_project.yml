@@ -26,3 +26,5 @@ models:
   seeing_things:           # your project name
     staging:               # the folder dbt/models/staging/
       +materialized: view  # "+" = apply to everything in this folder
+    marts:                 # the folder dbt/models/marts/
+      +materialized: table # default for marts: the model f1_grid_vs_finish.sql overrides it on DuckDB

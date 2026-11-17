@@ -41,3 +41,12 @@ dbt/dbt_packages/
 
 # Keep scratch files out of Git
 python/explore_*.py
+
+# dbt logs if run from the repo root by mistake
+/logs/
+
+# practice queries, kept local
+dbt/analyses/scratch*.sql
+
+# derived files: dbt build recreates them
+data/processed/*.parquet

@@ -1,0 +1,16 @@
+version: 2
+
+models:
+  - name: f1_grid_vs_finish
+    description: "Exhibit 1 story table. One row per classified finisher who started from the grid, 2022-2025. Pit-lane starts and unclassified drivers are excluded."
+    columns:
+      - name: result_id
+        description: "Season, round and driver ID joined: unique per row."
+        data_tests:
+          - unique
+          - not_null
+
+      - name: grid
+        description: "Starting position, 1 = pole. Pit-lane starts (0) are excluded."
+        data_tests:
+          - not_null
