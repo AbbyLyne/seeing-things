@@ -14,3 +14,6 @@ models:
         description: "Starting position, 1 = pole. Pit-lane starts (0) are excluded."
         data_tests:
           - not_null
+
+      - name: team_avg_gained
+        description: "TODO: what it averages, and over which rows (the partition)"
