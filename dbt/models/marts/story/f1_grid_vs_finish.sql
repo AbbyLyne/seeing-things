@@ -37,7 +37,7 @@ SELECT
     -- positive = progressed forward, negative = lost places
     grid - finish_position AS places_gained,
     -- average gain per team in the season, repeated on all rows for that team and season
-    avg(grid - finish_position) OVER (PARTITION BY season, team) AS team_avg_grid
+    avg(grid - finish_position) OVER (PARTITION BY season, team) AS team_avg_gained
   FROM finishers  
 
   -- Test: uv run dbt show --inline "select count(*) as all_rows, count(*) filter (where grid = 0) as pit_lane, count(*) filter (where finish_position is null) as not_classified from {{ ref('stg_f1__results') }}"

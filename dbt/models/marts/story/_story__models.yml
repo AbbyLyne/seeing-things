@@ -15,5 +15,13 @@ models:
         data_tests:
           - not_null
 
+      - name: finish_position
+        description: "Official finishing position (1 = winner). Never blank here, because every row is a classified finisher."
+        data_tests:
+          - not_null
+
+      - name: places_gained
+        description: "Grid position minus finishing position. Positive = moved forward (started 5th, finished 2nd = +3); negative = lost places."
+
       - name: team_avg_gained
-        description: "TODO: what it averages, and over which rows (the partition)"
+        description: "Average places_gained for the driver's team in that season, repeated on every row for that team and season. Compares a driver with their team's typical race."
