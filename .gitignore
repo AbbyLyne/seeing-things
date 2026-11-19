@@ -47,6 +47,3 @@ python/explore_*.py
 
 # practice queries, kept local
 dbt/analyses/scratch*.sql
-
-# derived files: dbt build recreates them
-data/processed/*.parquet
