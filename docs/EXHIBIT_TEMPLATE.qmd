@@ -1,15 +1,14 @@
 ---
 # Starter exhibit template for Seeing Things. Copy to stories/<exhibit-slug>.qmd and fill every TODO.
-# This file lives in docs/, which _quarto.yml excludes from rendering, so it never appears on the site.
 title: "TODO: the finding, stated as a headline"
 subtitle: "TODO: the question a curious visitor would ask"
 date: last-modified
 author: "Abby Brazell"
 wing: "TODO: The Cabinet of Coincidences | Mostly Noise | Decision Corridor | The Lab | The Engine Room"
 verdict: "TODO: Causal | Confounded | Coincidence | Reverse causation | Inconclusive"
-technique: "TODO: technique name (see docs/TECHNIQUE_CATALOGUE.md)"
+technique: "TODO: technique name (see TECHNIQUE_CATALOGUE)"
 brain-trap: "TODO: bias name"
-echo: "TODO: slug of the echo exhibit"
+echo-exhibit: "TODO: slug of the echo exhibit"   # not "echo": that name is reserved by Quarto (show code true/false)
 categories: [TODO-wing, TODO-verdict]
 image: "TODO: path to hero chart PNG, used for listing cards and social previews"
 data-synthetic: false
@@ -33,7 +32,7 @@ set.seed(2026)
 :::
 
 ## Double Take: guess first
-TODO: one question the visitor answers before seeing the chart (OJS slider later; plain text for now).
+TODO: one question the visitor answers before seeing the chart (OJS slider in Phase 3; plain text before then).
 
 ## The picture
 
