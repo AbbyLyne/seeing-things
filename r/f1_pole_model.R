@@ -30,7 +30,7 @@ spearman <- cor.test(
 spearman                 # rho is the effect size; the p-value is close to useless here (as below)
 # rho: Rank correlation coefficient (-1 to 1) measuring how closely two rankings align
 
-# ---- 3. Bootstrap 95% intervalfor rhop, resamples who races ---------------------------------------------------------
+# ---- 3. Bootstrap 95% interval for rho, resampling whole races ---------------------------------------------------------
 races <- f1 |> distinct(season, round)     # one row per race
 nrow(races)
 

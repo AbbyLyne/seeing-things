@@ -1,0 +1,168 @@
+---
+title: "Starting at the front helps, but the car does much of the work"
+subtitle: "Does pole position decide an F1 race?"
+date: last-modified
+author: "Abby Brazell"
+wing: "Decision Corridor"
+verdict: "Confounded"
+technique: "Spearman's rank correlation; linear regression with a covariate"
+brain-trap: "Narrative fallacy"
+echo-exhibit: "entrance-rank-vs-degree"   # planned exhibit; no page yet
+categories: [Decision Corridor, Confounded]
+image: "images/f1-pole-hero.png"
+data-synthetic: false
+filters:
+  - include-code-files              # shows real files in the Looking Glass, so code can't drift
+execute:
+  echo: false                       # code lives in the Looking Glass, not inline
+  warning: false
+---
+
+```{r}
+#| label: setup
+#| include: false
+# Paths are from the repo root because _quarto.yml sets execute-dir: project.
+library(tidyverse); library(arrow); library(broom)
+
+source("r/f1_pole_model.R")   # the analysis: f1, races, rhos, m_grid, m_team
+source("r/f1_pole_plot.R")    # the hero chart: by_grid, rho, drop_pct, hero
+
+# Counts before the mart's filters, from the raw file.
+# Check figures (vault, 17 Nov): 1,838 results, 15 pit-lane starts, 216 not classified.
+raw        <- read_parquet("data/raw/f1/race_results.parquet")
+classified <- !is.na(suppressWarnings(as.integer(raw$positionText)))  # a number = classified
+n_all      <- nrow(raw)
+n_pit      <- sum(as.integer(raw$grid) == 0)
+n_dropped  <- sum(!classified)
+
+# Short names for the numbers quoted in the text
+fmt     <- function(x, digits = 2) formatC(unname(x), format = "f", digits = digits)
+num     <- function(x) format(x, big.mark = ",")
+rho_ci  <- quantile(rhos, c(0.025, 0.975))
+b_only  <- tidy(m_grid, conf.int = TRUE) |> filter(term == "grid")
+b_car   <- tidy(m_team, conf.int = TRUE) |> filter(term == "grid")
+r2_only <- glance(m_grid)$r.squared
+r2_car  <- glance(m_team)$r.squared
+pole    <- by_grid |> filter(grid == 1)
+
+alt_text <- sprintf(
+  "Dot chart of starting grid position (1 to 20) against median finishing position, with bars showing the middle half of finishes. The dots follow a dashed 'finish where you start' diagonal closely: the further back drivers start, the further back they finish (rank correlation %s). The bars are wide, so grid slot alone leaves plenty of room for surprises.",
+  fmt(rho))
+```
+
+::: {.callout-note appearance="minimal"}
+**Verdict: Confounded** · Wing: Decision Corridor · Technique: Spearman's rank correlation, then regression with a covariate · Brain trap: narrative fallacy
+:::
+
+## Double Take: guess first
+
+Before you scroll: a driver starts on pole. Where do they usually finish?
+
+And if you scored how closely the finishing order follows the starting order, from 0 (no link at all) to 1 (identical every time), what score would you give it?
+
+Write your guess down, then open the box.
+
+::: {.callout-tip collapse="true" title="Take a second look"}
+Drivers starting on pole had a median finish of **`r pole$median_finish`**: at least half of the pole-sitters who finished, won. The middle half finished between `r pole$q25` and `r pole$q75`.
+
+The score for how closely finishing order follows starting order: **`r fmt(rho)`**. I guessed 0.37.
+:::
+
+## The picture
+
+```{r}
+#| label: fig-hero
+#| fig-width: 8
+#| fig-height: 5.5
+#| fig-cap: "Each dot is the typical (median) finish for drivers starting in that grid slot; the bar shows where the middle half of them finished."
+#| fig-alt: !expr alt_text
+hero
+```
+
+**Take a second look:** drivers starting on pole had a median finish of `r pole$median_finish`, and the middle half finished between `r pole$q25` and `r pole$q75`. The score is `r fmt(rho)`. 
+
+Notice the back of the grid: drivers starting 15th or lower typically finish a few places better than they start. Part of that is cars ahead retiring, which moves everyone behind them up for free.
+
+::: {.looking-glass}
+::: {.panel-tabset}
+## SQL: shape the data
+
+```{.sql include="../dbt/models/marts/story/f1_grid_vs_finish.sql"}
+```
+
+What to notice: the two `where` filters (pit-lane starts and non-finishers leave here, and the page says so below); the window function, which gives every driver their team's average without collapsing rows; and the `config` block, which writes Parquet on DuckDB and a table on any other warehouse.
+
+## Python: ingest
+
+```{.python include="../python/f1_ingest.py" start-line=1 end-line=40}
+```
+
+What to notice: results are cached and requests are throttled to one a second, so the API is never hammered and a re-run resumes instead of starting again.
+
+## R: test
+
+```{.r include="../r/f1_pole_model.R" start-line=1 end-line=40}
+```
+
+What to notice: the bootstrap resamples whole races, not rows, because drivers in the same race affect each other; the second model adds each team's car for each season, so it compares team-mates.
+:::
+:::
+
+## In plain English
+
+Drivers who start near the front usually finish near the front. But fast cars qualify well *and* race well, so a lot of what looks like the power of pole position is really the power of the car.
+
+## The technique
+
+**Spearman's rank correlation** (family: association), then **linear regression with a covariate** (family: modelling).
+
+Grid and finishing positions are both *ordinal*: the order matters, but the gap between 1st and 2nd isn't necessarily the same as between 15th and 16th. Spearman works on ranks, so it doesn't assume equal gaps. The regression then asks how much finishing position changes per grid place, first on its own and then comparing drivers in the same car (each team in each season counts as one car).
+
+**Assumptions and checks**
+
+| Assumption | How I checked | Result |
+|---|---|---|
+| Results are independent | Drivers in the same race are linked (only one can finish 1st) | The interval for the correlation resamples whole races. The regression's intervals will be too narrow, so treat them as rough |
+| The relationship is roughly a straight line | Residuals-vs-fitted plot | The average miss stays near zero across the range: a straight line is a fair summary |
+| Positions run from 1 to 20 | By design | Front-runners can finish far worse than predicted but not much better; noted as a limitation |
+| Only classified finishers are included | `r n_pit` pit-lane starts and `r num(n_dropped)` non-classified results were dropped | Survivorship risk: see the caveats |
+
+## What the numbers say
+
+- Across `r num(nrow(f1))` classified finishes in `r nrow(races)` races (2022–2025), the rank correlation between grid and finish is **`r fmt(rho)`** (95% interval `r fmt(rho_ci[1])` to `r fmt(rho_ci[2])`, resampling whole races). That's a strong link.
+- Ignoring the car, each place further back on the grid goes with finishing about **`r fmt(b_only$estimate)` places** further back (95% CI `r fmt(b_only$conf.low)` to `r fmt(b_only$conf.high)`). Grid alone explains `r fmt(r2_only * 100, 0)`% of the variation in finishing position.
+- Comparing drivers in the same car, that falls to about **`r fmt(b_car$estimate)` places** (95% CI `r fmt(b_car$conf.low)` to `r fmt(b_car$conf.high)`): **`r fmt(drop_pct, 0)`% smaller**. Knowing the car raises the share explained to `r fmt(r2_car * 100, 0)`%.
+
+## The brain trap: narrative fallacy
+
+We like tidy stories: "he won because he started on pole". The start is visible and memorable; the car's pace across the whole weekend isn't, so the story gives the credit to the grid slot.
+
+I fell for a version of it before running any code. I guessed the link was weak (0.37) and that the car explained little of it (8%). Both guesses were wrong in the same direction: I under-weighted the car.
+
+## Verdict: Confounded
+
+Grid and finish are strongly linked, but car pace drives both: fast cars qualify near the front *and* race near the front. Compare drivers in the same car and grid's effect shrinks by about `r fmt(drop_pct, 0)`%.
+
+What's left still isn't proof that the grid slot itself causes better finishes. A driver who out-qualifies their team-mate may simply be quicker that weekend, and this model can't tell the two apart.
+
+**What would change the verdict?** A case where grid slots move for reasons unrelated to speed, such as grid penalties for engine changes. Comparing penalised drivers with their own unpenalised races would isolate the grid slot itself.
+
+## Echo
+
+Same shape, different world: entrance-exam rank and final degree class (exhibit coming soon). Strong students enter near the top *and* graduate near the top, so the starting rank looks more powerful than it really is.
+
+## Sources and caveats
+
+- **Data:** [Jolpica F1 API](https://github.com/jolpica/jolpica-f1), race results 2022–2025, pulled 14–15 Nov 2026. Licence CC BY-NC-SA 4.0; the derived tables and this chart are shared under the same licence. n = `r num(nrow(f1))` classified finishes from `r num(n_all)` results. Unofficial data; F1 names are trademarks of Formula One Licensing B.V., and this site isn't affiliated with Formula 1.
+- **Limitations:**
+  - `r num(n_dropped)` results (`r fmt(n_dropped / n_all * 100, 1)`%) were dropped because the driver wasn't classified. If front-runners retire at a different rate from back-markers, that tilts the result (survivorship bias). Some late retirements still count as classified.
+  - The regression's intervals are too narrow, because results within a race aren't independent.
+  - "Same car" means the same team in the same season; it can't capture upgrades during a season or the difference between team-mates.
+  - Positions are bounded at 1 and 20.
+- **Synthetic?** No.
+
+<!-- MAP CHECKLIST (not shown on the page):
+     vault/concepts/f1-pole-position.md exists with type: exhibit, and links to
+     concept [[correlation]], technique [[spearman]], bias [[narrative-fallacy]].
+     Then run: uv run python python/build_graph.py vault data/graph/graph.json
+     (Week 4 buffer task) -->

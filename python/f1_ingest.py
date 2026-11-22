@@ -33,18 +33,18 @@ def main() -> None:
             resp = ergast.get_race_results(season=season, round=int(rnd))
             time.sleep(1)
 
-            if len(resp.content) == 0:                          # Skips passed cancelled race. No data
+            if len(resp.content) == 0:                          # a cancelled race has no results: skip it
                 print(f"{season} round {rnd}: no results, skipped")
                 continue
 
             race = pd.DataFrame(resp.content[0])                # results table
-            race["season"] = season                             # Label all rows in season
+            race["season"] = season                             # label all rows in season
             race["round"] = int(rnd)                            # and its rounds
             frames.append(race)
         
         print(f"{season}: {len(schedule)} races on the calendar")
 
-    #put all races into table and save
+    # combine every race into one table and save it
     results = pd.concat(frames, ignore_index=True)
     results.to_parquet(OUT_FILE, index=False)
 

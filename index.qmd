@@ -9,8 +9,10 @@ toc: false
 We're brilliant at spotting patterns, and just as good at seeing things that aren't there. Every exhibit in this museum pairs a real dataset with one clear picture, the statistical technique that tests it, and the brain trap that makes us misread it.
 
 ::: {.callout-note}
-## Under construction
-The doors open in stages. The first exhibits arrive in late November 2026, starting with a question from Formula 1: does pole position decide the race?
+## Now showing
+**Exhibit 1:** [Does pole position decide an F1 race?](stories/f1-pole-position.qmd) (Decision Corridor)
+
+More exhibits open over the coming weeks; next up, a seed-packet simulator in Mostly Noise.
 :::
 
 ## The wings
