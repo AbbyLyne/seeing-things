@@ -1,5 +1,82 @@
 [
   {
+    "objectID": "stories/f1-pole-position.html",
+    "href": "stories/f1-pole-position.html",
+    "title": "Starting at the front helps, but the car does much of the work",
+    "section": "",
+    "text": "Verdict: Confounded · Wing: Decision Corridor · Technique: Spearman’s rank correlation, then regression with a covariate · Brain trap: narrative fallacy"
+  },
+  {
+    "objectID": "stories/f1-pole-position.html#double-take-guess-first",
+    "href": "stories/f1-pole-position.html#double-take-guess-first",
+    "title": "Starting at the front helps, but the car does much of the work",
+    "section": "Double Take: guess first",
+    "text": "Double Take: guess first\nBefore you scroll: a driver starts on pole. Where do they usually finish?\nAnd if you scored how closely the finishing order follows the starting order, from 0 (no link at all) to 1 (identical every time), what score would you give it?\nWrite your guess down, then open the box.\n\n\n\n\n\n\nTipTake a second look\n\n\n\n\n\nDrivers starting on pole had a median finish of 1: at least half of the pole-sitters who finished, won. The middle half finished between 1 and 2.\nThe score for how closely finishing order follows starting order: 0.73. I guessed 0.37."
+  },
+  {
+    "objectID": "stories/f1-pole-position.html#the-picture",
+    "href": "stories/f1-pole-position.html#the-picture",
+    "title": "Starting at the front helps, but the car does much of the work",
+    "section": "The picture",
+    "text": "The picture\n\n\n\n\n\n\n\n\nFigure 1: Each dot is the typical (median) finish for drivers starting in that grid slot; the bar shows where the middle half of them finished.\n\n\n\n\n\nTake a second look: drivers starting on pole had a median finish of 1, and the middle half finished between 1 and 2. The score is 0.73.\nNotice the back of the grid: drivers starting 15th or lower typically finish a few places better than they start. Part of that is cars ahead retiring, which moves everyone behind them up for free.\n\n\nSQL: shape the dataPython: ingestR: test\n\n\n-- f1_grid_vs_finish: this table is used/read by Exhibit 1\n-- one row per classified finisher who started from the grid, 2022-2025\n--\n-- Config notes (kept out here because SQL comments can't go inside the braces):\n--   materialized: on DuckDB, write a Parquet file that R and Power BI read directly;\n--                 on Fabric/Snowflake (February), build an ordinary table. No forked SQL.\n--   location:     relative to where dbt runs (the dbt\\ folder), like the profile's db path.\n\n{{ config(\n    materialized = ('external' if target.type =='duckdb' else 'table'),\n    location = '../data/processed/f1_grid_vs_finish.parquet'\n) }}\n\nWITH finishers AS (\n\n    SELECT\n        result_id,     -- carrying through so the mart has a unique key to test\n        season,\n        round,\n        driver_code,\n        team,\n        grid,\n        finish_position\n      FROM {{ ref('stg_f1__results')}}    -- ref() is what draws the lineage arrow\n     WHERE grid &gt; 0                       -- pit-lane starts have no grid slot to compare - removing\n       AND finish_position IS NOT NULL    -- only classified finishers; this is exhibit logic\n)\n\nSELECT\n    result_id,\n    season,\n    round,\n    driver_code,\n    team,\n    grid,\n    finish_position,\n    -- positive = progressed forward, negative = lost places\n    grid - finish_position AS places_gained,\n    -- average gain per team in the season, repeated on all rows for that team and season\n    avg(grid - finish_position) OVER (PARTITION BY season, team) AS team_avg_gained\n  FROM finishers  \n\n  -- Test: uv run dbt show --inline \"select count(*) as all_rows, count(*) filter (where grid = 0) as pit_lane, count(*) filter (where finish_position is null) as not_classified from {{ ref('stg_f1__results') }}\"\nWhat to notice: the two where filters (pit-lane starts and non-finishers leave here, and the page says so below); the window function, which gives every driver their team’s average without collapsing rows; and the config block, which writes Parquet on DuckDB and a table on any other warehouse.\n\n\n\"\"\"Pull F1 race results from the Jolpica API (via FastF1) into data/raw/f1/.\n\nRun from the repo root:  uv run python python/f1_ingest.py\nData licence: CC BY-NC-SA 4.0 (Jolpica). See data/DATA_SOURCES.md.\n\"\"\"\n\nfrom pathlib import Path\nimport time \n\nimport fastf1 \nimport pandas as pd\nfrom fastf1.ergast import Ergast\n\n# Settings defined here, at the top, so everything below can use them\nSEASONS = [2022, 2023, 2024, 2025]\nCACHE_DIR = Path(\"data/raw/fastf1_cache\")\nOUT_FILE = Path(\"data/raw/f1/race_results.parquet\")\n\ndef main() -&gt; None:\n    CACHE_DIR.mkdir(parents=True, exist_ok=True)\n    OUT_FILE.parent.mkdir(parents=True, exist_ok=True)\n\n    fastf1.Cache.configure(cache_dir=str(CACHE_DIR))\n\n    ergast = Ergast(result_type=\"pandas\", auto_cast=True)\n    frames = []                                                       # One table per race\n    \n    # For each season, fetch results\n    for season in SEASONS:\n        schedule = ergast.get_race_schedule(season=season)\n\n        for rnd in schedule[\"round\"]:\n            resp = ergast.get_race_results(season=season, round=int(rnd))\n            time.sleep(1)\n\n            if len(resp.content) == 0:                          # a cancelled race has no results: skip it\n                print(f\"{season} round {rnd}: no results, skipped\")\n                continue\n\n            race = pd.DataFrame(resp.content[0])                # results table\nWhat to notice: results are cached and requests are throttled to one a second, so the API is never hammered and a re-run resumes instead of starting again.\n\n\n# r/f1_pole_model.R\n# Exibit 1: Does pole position decide the race?\n# Reads the dbt story mart, measures how strongly grid and finish move together,\n# then checks how much of that is really the car (team).\n# Must run from repo root (paths below are relative to it)\n\n# Tidyverse: Opinionated suite of R packages for clean, consistent data science\nlibrary(tidyverse)       # wrangling (dplyr), iteration (purrr), & modern data frames (tibble)\nlibrary(arrow)           # reads Parquet files = Parquet files: Compact, high-speed tabular data files (much faster and smaller than CSVs)\nlibrary(broom)           # turns the model output into tidy tables\n\nset.seed(2026)           # the bootstrap samples at random; a seed makes the result repeatable\n\n# ---- 1. Read the mart ---------------------------------------------------------\nf1 &lt;- read_parquet(\"data/processed/f1_grid_vs_finish.parquet\")\nglimpse(f1)                 # every column, its type, and the fist few values\nstopifnot(nrow(f1)== 1609)  # Total data points as checked in stg_f1__results.sql\n\n# ---- 2. Spearman's rank correlation ---------------------------------------------------------\n# Spearman's rank correlation: measures how closely starting grid position\n# and finishing position agree in rank order (-1 to +1). A value near +1\n# means drivers tend to finish roughly where they start; near 0 means grid\n# position tells us little about the result. Used instead of Pearson because\n# positions are ranks and the relationship needn't be linear.\nspearman &lt;- cor.test(\n  f1$grid,f1$finish_position,\n  method = \"spearman\",\n  exact = FALSE          # positions repeat across races (lots of ties), so use the approximation\n)\nspearman                 # rho is the effect size; the p-value is close to useless here (as below)\n# rho: Rank correlation coefficient (-1 to 1) measuring how closely two rankings align\n\n# ---- 3. Bootstrap 95% interval for rho, resampling whole races ---------------------------------------------------------\nraces &lt;- f1 |&gt; distinct(season, round)     # one row per race\nnrow(races)\n\nboot_rho &lt;- function() {\n  # draws as many races in the dataset, with replacement\n  picked &lt;- races |&gt; slice_sample(prop = 1, replace = TRUE)\n\nWhat to notice: the bootstrap resamples whole races, not rows, because drivers in the same race affect each other; the second model adds each team’s car for each season, so it compares team-mates."
+  },
+  {
+    "objectID": "stories/f1-pole-position.html#in-plain-english",
+    "href": "stories/f1-pole-position.html#in-plain-english",
+    "title": "Starting at the front helps, but the car does much of the work",
+    "section": "In plain English",
+    "text": "In plain English\nDrivers who start near the front usually finish near the front. But fast cars qualify well and race well, so a lot of what looks like the power of pole position is really the power of the car."
+  },
+  {
+    "objectID": "stories/f1-pole-position.html#the-technique",
+    "href": "stories/f1-pole-position.html#the-technique",
+    "title": "Starting at the front helps, but the car does much of the work",
+    "section": "The technique",
+    "text": "The technique\nSpearman’s rank correlation (family: association), then linear regression with a covariate (family: modelling).\nGrid and finishing positions are both ordinal: the order matters, but the gap between 1st and 2nd isn’t necessarily the same as between 15th and 16th. Spearman works on ranks, so it doesn’t assume equal gaps. The regression then asks how much finishing position changes per grid place, first on its own and then comparing drivers in the same car (each team in each season counts as one car).\nAssumptions and checks\n\n\n\n\n\n\n\n\nAssumption\nHow I checked\nResult\n\n\n\n\nResults are independent\nDrivers in the same race are linked (only one can finish 1st)\nThe interval for the correlation resamples whole races. The regression’s intervals will be too narrow, so treat them as rough\n\n\nThe relationship is roughly a straight line\nResiduals-vs-fitted plot\nThe average miss stays near zero across the range: a straight line is a fair summary\n\n\nPositions run from 1 to 20\nBy design\nFront-runners can finish far worse than predicted but not much better; noted as a limitation\n\n\nOnly classified finishers are included\n15 pit-lane starts and 216 non-classified results were dropped\nSurvivorship risk: see the caveats"
+  },
+  {
+    "objectID": "stories/f1-pole-position.html#what-the-numbers-say",
+    "href": "stories/f1-pole-position.html#what-the-numbers-say",
+    "title": "Starting at the front helps, but the car does much of the work",
+    "section": "What the numbers say",
+    "text": "What the numbers say\n\nAcross 1,609 classified finishes in 92 races (2022–2025), the rank correlation between grid and finish is 0.73 (95% interval 0.69 to 0.77, resampling whole races). That’s a strong link.\nIgnoring the car, each place further back on the grid goes with finishing about 0.65 places further back (95% CI 0.62 to 0.68). Grid alone explains 52% of the variation in finishing position.\nComparing drivers in the same car, that falls to about 0.42 places (95% CI 0.38 to 0.45): 36% smaller. Knowing the car raises the share explained to 64%."
+  },
+  {
+    "objectID": "stories/f1-pole-position.html#the-brain-trap-narrative-fallacy",
+    "href": "stories/f1-pole-position.html#the-brain-trap-narrative-fallacy",
+    "title": "Starting at the front helps, but the car does much of the work",
+    "section": "The brain trap: narrative fallacy",
+    "text": "The brain trap: narrative fallacy\nWe like tidy stories: “he won because he started on pole”. The start is visible and memorable; the car’s pace across the whole weekend isn’t, so the story gives the credit to the grid slot.\nI fell for a version of it before running any code. I guessed the link was weak (0.37) and that the car explained little of it (8%). Both guesses were wrong in the same direction: I under-weighted the car."
+  },
+  {
+    "objectID": "stories/f1-pole-position.html#verdict-confounded",
+    "href": "stories/f1-pole-position.html#verdict-confounded",
+    "title": "Starting at the front helps, but the car does much of the work",
+    "section": "Verdict: Confounded",
+    "text": "Verdict: Confounded\nGrid and finish are strongly linked, but car pace drives both: fast cars qualify near the front and race near the front. Compare drivers in the same car and grid’s effect shrinks by about 36%.\nWhat’s left still isn’t proof that the grid slot itself causes better finishes. A driver who out-qualifies their team-mate may simply be quicker that weekend, and this model can’t tell the two apart.\nWhat would change the verdict? A case where grid slots move for reasons unrelated to speed, such as grid penalties for engine changes. Comparing penalised drivers with their own unpenalised races would isolate the grid slot itself."
+  },
+  {
+    "objectID": "stories/f1-pole-position.html#echo",
+    "href": "stories/f1-pole-position.html#echo",
+    "title": "Starting at the front helps, but the car does much of the work",
+    "section": "Echo",
+    "text": "Echo\nSame shape, different world: entrance-exam rank and final degree class (exhibit coming soon). Strong students enter near the top and graduate near the top, so the starting rank looks more powerful than it really is."
+  },
+  {
+    "objectID": "stories/f1-pole-position.html#sources-and-caveats",
+    "href": "stories/f1-pole-position.html#sources-and-caveats",
+    "title": "Starting at the front helps, but the car does much of the work",
+    "section": "Sources and caveats",
+    "text": "Sources and caveats\n\nData: Jolpica F1 API, race results 2022–2025, pulled 14–15 Nov 2026. Licence CC BY-NC-SA 4.0; the derived tables and this chart are shared under the same licence. n = 1,609 classified finishes from 1,838 results. Unofficial data; F1 names are trademarks of Formula One Licensing B.V., and this site isn’t affiliated with Formula 1.\nLimitations:\n\n216 results (11.8%) were dropped because the driver wasn’t classified. If front-runners retire at a different rate from back-markers, that tilts the result (survivorship bias). Some late retirements still count as classified.\nThe regression’s intervals are too narrow, because results within a race aren’t independent.\n“Same car” means the same team in the same season; it can’t capture upgrades during a season or the difference between team-mates.\nPositions are bounded at 1 and 20.\n\nSynthetic? No."
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "Seeing Things is a museum of patterns: a collection of short data stories that each ask a simple question, test it honestly, and give a verdict (causal, confounded, coincidence, reverse causation, or inconclusive).\nUnder every chart, the Looking Glass shows the exact SQL, Python and R that built it, so nothing has to be taken on trust.\nIt’s built by Abby Brazell, a data analyst in the Bay of Plenty, Aotearoa New Zealand, as a personal project using openly licensed public data. The code is on GitHub."
+  },
+  {
     "objectID": "index.html",
     "href": "index.html",
     "title": "Seeing Things",
@@ -12,12 +89,5 @@
     "title": "Seeing Things",
     "section": "The wings",
     "text": "The wings\n\nThe Cabinet of Coincidences: correlations that look meaningful and aren’t.\nMostly Noise: chance, luck and streaks.\nDecision Corridor: what actually causes what.\nThe Lab: testing ideas properly."
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
-    "section": "",
-    "text": "Seeing Things is a museum of patterns: a collection of short data stories that each ask a simple question, test it honestly, and give a verdict (causal, confounded, coincidence, reverse causation, or inconclusive).\nUnder every chart, the Looking Glass shows the exact SQL, Python and R that built it, so nothing has to be taken on trust.\nIt’s built by Abby Brazell, a data analyst in the Bay of Plenty, Aotearoa New Zealand, as a personal project using openly licensed public data. The code is on GitHub."
   }
 ]
