@@ -45,6 +45,11 @@ r2_only <- glance(m_grid)$r.squared
 r2_car  <- glance(m_team)$r.squared
 pole    <- by_grid |> filter(grid == 1)
 
+pole_finishes <- f1$finish_position[f1$grid == 1]   # finishing position of everyone who started on pole
+n_pole        <- length(pole_finishes)               # how many pole-sitters finished the race
+pole_win_pct  <- mean(pole_finishes == 1) * 100      # share who won
+pole_top2_pct <- mean(pole_finishes <= 2) * 100      # share who finished 1st or 2nd
+
 alt_text <- sprintf(
   "Dot chart of starting grid position (1 to 20) against median finishing position, with bars showing the middle half of finishes. The dots follow a dashed 'finish where you start' diagonal closely: the further back drivers start, the further back they finish (rank correlation %s). The bars are wide, so grid slot alone leaves plenty of room for surprises.",
   fmt(rho))
@@ -63,9 +68,10 @@ And if you scored how closely the finishing order follows the starting order, fr
 Write your guess down, then open the box.
 
 ::: {.callout-tip collapse="true" title="Take a second look"}
-Drivers starting on pole had a median finish of **`r pole$median_finish`**: at least half of the pole-sitters who finished, won. The middle half finished between `r pole$q25` and `r pole$q75`.
+Of the `r n_pole` drivers who started on pole and finished the race, **`r fmt(pole_win_pct, 0)`% won**, and `r fmt(pole_top2_pct, 0)`% finished first or second.
 
-The score for how closely finishing order follows starting order: **`r fmt(rho)`**. I guessed 0.37.
+And how closely does the finishing order follow the starting order overall? 
+On a scale from 0 (no link) to 1 (everyone finishes exactly where they started), it scores **`r fmt(rho)`**: a strong link, but far from a certainty. I guessed 0.37.
 :::
 
 ## The picture
@@ -79,9 +85,9 @@ The score for how closely finishing order follows starting order: **`r fmt(rho)`
 hero
 ```
 
-**Take a second look:** drivers starting on pole had a median finish of `r pole$median_finish`, and the middle half finished between `r pole$q25` and `r pole$q75`. The score is `r fmt(rho)`. 
+**Take a second look:** Look at the right-hand side of the chart: drivers who start 15th or further back usually finish a few places *higher* than they started. Part of that gain is free: when cars ahead retire, everyone behind them moves up a place.
 
-Notice the back of the grid: drivers starting 15th or lower typically finish a few places better than they start. Part of that is cars ahead retiring, which moves everyone behind them up for free.
+Some of it is also fast cars that started out of place, after a grid penalty or a bad qualifying, working their way back to where they belong.
 
 ::: {.looking-glass}
 ::: {.panel-tabset}
