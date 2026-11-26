@@ -1,0 +1,10 @@
+version: 2
+
+sources:
+  - name: sim                                  # in SQL: source('sim', 'seed_germination')
+    description: "SYNTHETIC data made by python/seed_sim.py (seed 2026). Not real seeds: no licence needed."
+    meta:
+      external_location: "../data/raw/sim/{name}.parquet"   # {name} = the table name below
+    tables:
+      - name: seed_germination                 # -> ../data/raw/sim/seed_germination.parquet
+        description: "One row per simulated packet: 6 packet sizes x 2,000 packets, each seed growing with probability 0.8."

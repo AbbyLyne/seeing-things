@@ -37,3 +37,8 @@ Details for each dataset are in its own section below the table.
 **Access**
 - Rate limits: 4 requests a second (burst), 500 an hour (sustained). The ingest caches replies and pauses one second between requests.
 - Volunteer-run: no uptime or accuracy guarantee.
+
+
+
+## Seed Germination Simulator
+| Sim/seed_germination | python/seed_sim.py (synthetic) | None needed: our own synthetic data; code MIT | Yes | 24 Nov 2026 | 12,000 | Seed 2026, p = 0.8, 6 packet sizes × 2,000 |

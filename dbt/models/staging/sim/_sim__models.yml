@@ -1,0 +1,27 @@
+version: 2
+
+models:
+  - name: stg_sim__seed_germination
+    description: "SYNTHETIC. One row per simulated seed packet from python/seed_sim.py. Typed and renamed; the rate is recomputed from the counts."
+    columns:
+      - name: packet_key
+        description: "Packet size and packet number joined, e.g. '10-7'. Unique per row."
+        data_tests:
+          - unique
+          - not_null
+      - name: packet_size
+        description: "Seeds planted in the packet."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:                       # dbt 1.10+ puts a test's settings under 'arguments'
+                values: [5, 10, 20, 50, 100, 500]
+                quote: false                   # numbers, not text: don't wrap them in quotes
+      - name: seeds_germinated
+        description: "Seeds that grew, out of packet_size. The custom test checks it's between 0 and packet_size."
+        data_tests:
+          - not_null
+      - name: germination_rate
+        description: "seeds_germinated divided by packet_size, from 0 (none grew) to 1 (all grew). The packet claims 0.8."
+        data_tests:
+          - not_null              

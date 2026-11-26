@@ -1,0 +1,13 @@
+version: 2
+
+exposures:
+  - name: f1_pole_position                     # lowercase with underscores, like a model name
+    label: "Does pole position decide the race?"
+    type: analysis                             # options: dashboard, notebook, analysis, ml, application
+    maturity: high                             # it's published and checked
+    url: https://abbylyne.github.io/seeing-things/stories/f1-pole-position.html
+    description: "Exhibit 1 (Decision Corridor), published 22 Nov 2026. Reads the story mart's Parquet in R."
+    depends_on:
+      - ref('f1_grid_vs_finish')
+    owner:
+      name: Abby Brazell
